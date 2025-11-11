@@ -12,7 +12,8 @@
 
 @implementation AppDelegate
 
-- (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
+    {
     // Create window - make it larger to accommodate network info
     NSRect windowRect = NSMakeRect(0, 0, 600, 500);
     self.window = [[NSWindow alloc] initWithContentRect:windowRect
@@ -105,30 +106,33 @@
     
     // Update network info
     [self updateNetworkInfo];
-}
+    }
 
-- (void)testConnection:(id)sender {
+- (void)testConnection:(id)sender
+    {
     NSString *ipAddress = [self.ipAddressField stringValue];
     NSString *portString = [self.portField stringValue];
     
-    if (ipAddress.length == 0) {
+    if (ipAddress.length == 0)
+        {
         NSAlert *alert = [[NSAlert alloc] init];
         [alert setMessageText:@"Error"];
         [alert setInformativeText:@"Please enter an IP address"];
         [alert addButtonWithTitle:@"OK"];
         [alert runModal];
         return;
-    }
+        }
     
     NSInteger port = [portString integerValue];
-    if (port <= 0 || port > 65535) {
+    if (port <= 0 || port > 65535)
+        {
         NSAlert *alert = [[NSAlert alloc] init];
         [alert setMessageText:@"Error"];
         [alert setInformativeText:@"Please enter a valid port number (1-65535)"];
         [alert addButtonWithTitle:@"OK"];
         [alert runModal];
         return;
-    }
+        }
     
     // Disable button during connection test
     [self.testButton setEnabled:NO];
@@ -157,26 +161,31 @@
     
     // Set a timeout for the connection
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        if (!self.connectionCompleted) {
+        if (!self.connectionCompleted)
+            {
             [self closeConnection];
             [self showConnectionResult:NO errorMessage:@"Connection timeout"];
-        }
-    });
-}
+            }
+        });
+    }
 
-- (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode {
-    switch (eventCode) {
+- (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode
+    {
+    switch (eventCode)
+        {
         case NSStreamEventOpenCompleted:
-            if (aStream == self.outputStream) {
+            if (aStream == self.outputStream)
+                {
                 // Connection established successfully
                 self.connectionCompleted = YES;
                 self.connectionSucceeded = YES;
                 [self closeConnection];
                 [self showConnectionResult:YES errorMessage:nil];
-            }
+                }
             break;
             
-        case NSStreamEventErrorOccurred: {
+        case NSStreamEventErrorOccurred:
+            {
             self.connectionCompleted = YES;
             self.connectionSucceeded = NO;
             NSError *error = [aStream streamError];
@@ -184,7 +193,7 @@
             [self closeConnection];
             [self showConnectionResult:NO errorMessage:errorMessage];
             break;
-        }
+            }
             
         case NSStreamEventEndEncountered:
             [self closeConnection];
@@ -192,26 +201,30 @@
             
         default:
             break;
+        }
     }
-}
 
-- (void)closeConnection {
-    if (self.inputStream) {
+- (void)closeConnection
+    {
+    if (self.inputStream)
+        {
         [self.inputStream close];
         [self.inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
         [self.inputStream setDelegate:nil];
         self.inputStream = nil;
-    }
+        }
     
-    if (self.outputStream) {
+    if (self.outputStream)
+        {
         [self.outputStream close];
         [self.outputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
         [self.outputStream setDelegate:nil];
         self.outputStream = nil;
+        }
     }
-}
 
-- (void)showConnectionResult:(BOOL)success errorMessage:(NSString *)errorMessage {
+- (void)showConnectionResult:(BOOL)success errorMessage:(NSString *)errorMessage
+    {
     dispatch_async(dispatch_get_main_queue(), ^{
         // Re-enable button
         [self.testButton setEnabled:YES];
@@ -222,26 +235,31 @@
         NSString *ipAddress = [self.ipAddressField stringValue];
         NSString *portString = [self.portField stringValue];
         
-        if (success) {
+        if (success)
+            {
             [alert setMessageText:@"Connection Successful"];
             [alert setInformativeText:[NSString stringWithFormat:@"Successfully connected to %@:%@", ipAddress, portString]];
             [alert setAlertStyle:NSAlertStyleInformational];
-        } else {
+            }
+        else
+            {
             [alert setMessageText:@"Connection Failed"];
             NSString *infoText = [NSString stringWithFormat:@"Failed to connect to %@:%@", ipAddress, portString];
-            if (errorMessage) {
+            if (errorMessage)
+                {
                 infoText = [NSString stringWithFormat:@"%@\n\nError: %@", infoText, errorMessage];
-            }
+                }
             [alert setInformativeText:infoText];
             [alert setAlertStyle:NSAlertStyleWarning];
-        }
+            }
         
         [alert addButtonWithTitle:@"OK"];
         [alert runModal];
-    });
-}
+        });
+    }
 
-- (void)updateNetworkInfo {
+- (void)updateNetworkInfo
+    {
     NSMutableString *infoText = [[NSMutableString alloc] init];
     
     // Get network interfaces
@@ -249,147 +267,186 @@
     struct ifaddrs *temp_addr = NULL;
     int success = getifaddrs(&interfaces);
     
-    if (success == 0) {
+    if (success == 0)
+        {
         temp_addr = interfaces;
         NSMutableArray *ipv4Addresses = [[NSMutableArray alloc] init];
         NSMutableArray *ipv6Addresses = [[NSMutableArray alloc] init];
         
-        while (temp_addr != NULL) {
+        while (temp_addr != NULL)
+            {
             // Check if interface is up and not a loopback interface
-            if ((temp_addr->ifa_flags & IFF_UP) && !(temp_addr->ifa_flags & IFF_LOOPBACK)) {
+            if ((temp_addr->ifa_flags & IFF_UP) && !(temp_addr->ifa_flags & IFF_LOOPBACK))
+                {
                 // IPv4
-                if (temp_addr->ifa_addr->sa_family == AF_INET) {
+                if (temp_addr->ifa_addr->sa_family == AF_INET)
+                    {
                     struct sockaddr_in *sin = (struct sockaddr_in *)temp_addr->ifa_addr;
                     char ip[INET_ADDRSTRLEN];
                     inet_ntop(AF_INET, &(sin->sin_addr), ip, INET_ADDRSTRLEN);
                     NSString *interfaceName = [NSString stringWithUTF8String:temp_addr->ifa_name];
                     NSString *ipString = [NSString stringWithUTF8String:ip];
                     [ipv4Addresses addObject:[NSString stringWithFormat:@"%@: %@", interfaceName, ipString]];
-                }
+                    }
                 // IPv6
-                else if (temp_addr->ifa_addr->sa_family == AF_INET6) {
+                else if (temp_addr->ifa_addr->sa_family == AF_INET6)
+                    {
                     struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)temp_addr->ifa_addr;
                     char ip6[INET6_ADDRSTRLEN];
                     inet_ntop(AF_INET6, &(sin6->sin6_addr), ip6, INET6_ADDRSTRLEN);
                     NSString *interfaceName = [NSString stringWithUTF8String:temp_addr->ifa_name];
                     NSString *ipString = [NSString stringWithUTF8String:ip6];
                     [ipv6Addresses addObject:[NSString stringWithFormat:@"%@: %@", interfaceName, ipString]];
+                    }
                 }
-            }
             temp_addr = temp_addr->ifa_next;
-        }
+            }
         
         freeifaddrs(interfaces);
         
         // Build info string
         [infoText appendString:@"IPv4 Addresses:\n"];
-        if (ipv4Addresses.count > 0) {
-            for (NSString *addr in ipv4Addresses) {
+        if (ipv4Addresses.count > 0)
+            {
+            for (NSString *addr in ipv4Addresses)
+                {
                 [infoText appendFormat:@"  %@\n", addr];
+                }
             }
-        } else {
+        else
+            {
             [infoText appendString:@"  None\n"];
-        }
+            }
         
         [infoText appendString:@"\nIPv6 Addresses:\n"];
-        if (ipv6Addresses.count > 0) {
-            for (NSString *addr in ipv6Addresses) {
+        if (ipv6Addresses.count > 0)
+            {
+            for (NSString *addr in ipv6Addresses)
+                {
                 [infoText appendFormat:@"  %@\n", addr];
+                }
             }
-        } else {
+        else
+            {
             [infoText appendString:@"  None\n"];
-        }
+            }
         
         // Try to determine DHCP vs Static (simplified - check system configuration)
         [infoText appendString:@"\nConfiguration Method:\n"];
         SCPreferencesRef prefs = SCPreferencesCreate(NULL, CFSTR("NetworkIssueTest"), NULL);
-        if (prefs) {
+        if (prefs)
+            {
             SCNetworkSetRef currentSet = SCNetworkSetCopyCurrent(prefs);
-            if (currentSet) {
+            if (currentSet)
+                {
                 // Get all services
                 CFArrayRef services = SCNetworkSetCopyServices(currentSet);
-                if (services) {
+                if (services)
+                    {
                     CFIndex count = CFArrayGetCount(services);
                     BOOL foundConfiguration = NO;
-                    for (CFIndex i = 0; i < count; i++) {
+                    for (CFIndex i = 0; i < count; i++)
+                        {
                         SCNetworkServiceRef service = (SCNetworkServiceRef)CFArrayGetValueAtIndex(services, i);
                         SCNetworkInterfaceRef interface = SCNetworkServiceGetInterface(service);
                         
-                        if (interface) {
+                        if (interface)
+                            {
                             CFStringRef interfaceType = SCNetworkInterfaceGetInterfaceType(interface);
                             // Check both Ethernet and WiFi interfaces
                             BOOL isNetworkInterface = NO;
-                            if (interfaceType) {
+                            if (interfaceType)
+                                {
                                 if (CFStringCompare(interfaceType, kSCNetworkInterfaceTypeEthernet, 0) == kCFCompareEqualTo ||
                                     CFStringCompare(interfaceType, kSCNetworkInterfaceTypeIEEE80211, 0) == kCFCompareEqualTo ||
-                                    CFStringCompare(interfaceType, kSCNetworkInterfaceTypeWWAN, 0) == kCFCompareEqualTo) {
+                                    CFStringCompare(interfaceType, kSCNetworkInterfaceTypeWWAN, 0) == kCFCompareEqualTo)
+                                    {
                                     isNetworkInterface = YES;
+                                    }
                                 }
-                            }
                             
-                            if (isNetworkInterface) {
+                            if (isNetworkInterface)
+                                {
                                 // Check for configuration method
                                 SCNetworkProtocolRef ipv4 = SCNetworkServiceCopyProtocol(service, kSCNetworkProtocolTypeIPv4);
-                                if (ipv4) {
+                                if (ipv4)
+                                    {
                                     CFDictionaryRef config = SCNetworkProtocolGetConfiguration(ipv4);
-                                    if (config) {
+                                    if (config)
+                                        {
                                         CFStringRef method = CFDictionaryGetValue(config, kSCPropNetIPv4ConfigMethod);
-                                        if (method) {
+                                        if (method)
+                                            {
                                             foundConfiguration = YES;
                                             CFStringRef name = SCNetworkServiceGetName(service);
                                             NSString *serviceName = name ? (__bridge NSString *)name : @"Unknown";
                                             
-                                            if (CFStringCompare(method, kSCValNetIPv4ConfigMethodDHCP, 0) == kCFCompareEqualTo) {
+                                            if (CFStringCompare(method, kSCValNetIPv4ConfigMethodDHCP, 0) == kCFCompareEqualTo)
+                                                {
                                                 [infoText appendFormat:@"  %@: DHCP\n", serviceName];
-                                            } else if (CFStringCompare(method, kSCValNetIPv4ConfigMethodManual, 0) == kCFCompareEqualTo) {
+                                                }
+                                            else if (CFStringCompare(method, kSCValNetIPv4ConfigMethodManual, 0) == kCFCompareEqualTo)
+                                                {
                                                 [infoText appendFormat:@"  %@: Static (Manual)\n", serviceName];
-                                            } else if (CFStringCompare(method, kSCValNetIPv4ConfigMethodBOOTP, 0) == kCFCompareEqualTo) {
+                                                }
+                                            else if (CFStringCompare(method, kSCValNetIPv4ConfigMethodBOOTP, 0) == kCFCompareEqualTo)
+                                                {
                                                 [infoText appendFormat:@"  %@: BootP\n", serviceName];
-                                            } else {
+                                                }
+                                            else
+                                                {
                                                 [infoText appendFormat:@"  %@: %@\n", serviceName, (__bridge NSString *)method];
+                                                }
                                             }
                                         }
-                                    }
                                     CFRelease(ipv4);
+                                    }
                                 }
                             }
                         }
-                    }
-                    if (!foundConfiguration) {
+                    if (!foundConfiguration)
+                        {
                         [infoText appendString:@"  Unable to determine configuration method (may require admin privileges)\n"];
-                    }
+                        }
                     CFRelease(services);
-                }
+                    }
                 CFRelease(currentSet);
-            }
+                }
             CFRelease(prefs);
-        } else {
+            }
+        else
+            {
             [infoText appendString:@"  Unable to determine (requires System Preferences access)\n"];
+            }
         }
-    } else {
+    else
+        {
         [infoText appendString:@"Unable to retrieve network information\n"];
-    }
+        }
     
     // Update text view
     [[self.networkInfoTextView textStorage] setAttributedString:[[NSAttributedString alloc] initWithString:infoText]];
-}
+    }
 
-- (void)pingButtonClicked:(id)sender {
+- (void)pingButtonClicked:(id)sender
+    {
     NSString *ipAddress = [self.ipAddressField stringValue];
     
-    if (ipAddress.length == 0) {
+    if (ipAddress.length == 0)
+        {
         NSAlert *alert = [[NSAlert alloc] init];
         [alert setMessageText:@"Error"];
         [alert setInformativeText:@"Please enter an IP address to ping"];
         [alert addButtonWithTitle:@"OK"];
         [alert runModal];
         return;
-    }
+        }
     
     [self pingIPAddress:ipAddress];
-}
+    }
 
-- (void)pingIPAddress:(NSString *)ipAddress {
+- (void)pingIPAddress:(NSString *)ipAddress
+    {
     // Clean up any existing ping
     [self cleanupPingTask];
     
@@ -425,9 +482,10 @@
         if (!strongSelf) return;
         
         // Timeout - terminate the task
-        if (strongSelf.pingTask && [strongSelf.pingTask isRunning]) {
+        if (strongSelf.pingTask && [strongSelf.pingTask isRunning])
+            {
             [strongSelf.pingTask terminate];
-        }
+            }
         
         dispatch_async(dispatch_get_main_queue(), ^{
             typeof(self) strongSelf = weakSelf;
@@ -435,8 +493,8 @@
             
             [strongSelf cleanupPingTask];
             [strongSelf handlePingResult:[NSString stringWithFormat:@"Ping to %@ timed out after 20 seconds", ipAddress]];
+            });
         });
-    });
     dispatch_resume(self.pingTimerSource);
     
     // Launch task and wait for completion on background queue
@@ -444,7 +502,8 @@
         typeof(self) strongSelf = weakSelf;
         if (!strongSelf) return;
         
-        @try {
+        @try
+            {
             // Launch the task
             [strongSelf.pingTask launch];
             
@@ -458,19 +517,22 @@
             
             // Combine output and error (ping typically uses stdout)
             NSMutableData *allData = [outputData mutableCopy];
-            if (errorData.length > 0) {
+            if (errorData.length > 0)
+                {
                 [allData appendData:errorData];
-            }
+                }
             
             // Convert to string
             NSString *output = nil;
-            if (allData.length > 0) {
+            if (allData.length > 0)
+                {
                 output = [[NSString alloc] initWithData:allData encoding:NSUTF8StringEncoding];
                 // Fallback to ASCII if UTF-8 fails
-                if (!output) {
+                if (!output)
+                    {
                     output = [[NSString alloc] initWithData:allData encoding:NSASCIIStringEncoding];
+                    }
                 }
-            }
             
             // Cancel timeout on main thread
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -478,23 +540,28 @@
                 if (!strongSelf) return;
                 
                 // Cancel timeout
-                if (strongSelf.pingTimerSource) {
+                if (strongSelf.pingTimerSource)
+                    {
                     dispatch_source_cancel(strongSelf.pingTimerSource);
                     strongSelf.pingTimerSource = nil;
-                }
+                    }
                 
                 // Handle result - always show output, even if empty
                 NSInteger status = [strongSelf.pingTask terminationStatus];
-                if (output && output.length > 0) {
+                if (output && output.length > 0)
+                    {
                     [strongSelf handlePingResult:output];
-                } else {
+                    }
+                else
+                    {
                     // No output but task completed - might be a permission issue or other problem
                     NSString *errorMsg = [NSString stringWithFormat:@"Ping completed with exit status: %ld\n(No output received)", (long)status];
                     [strongSelf handlePingResult:errorMsg];
-                }
-            });
+                    }
+                });
             
-        } @catch (NSException *exception) {
+            } @catch (NSException *exception)
+            {
             dispatch_async(dispatch_get_main_queue(), ^{
                 typeof(self) strongSelf = weakSelf;
                 if (!strongSelf) return;
@@ -508,39 +575,45 @@
                 [alert setInformativeText:[NSString stringWithFormat:@"Failed to start ping: %@", [exception reason]]];
                 [alert addButtonWithTitle:@"OK"];
                 [alert runModal];
-            });
-        }
-    });
-}
+                });
+            }
+        });
+    }
 
-- (void)cleanupPingTask {
+- (void)cleanupPingTask
+    {
     // Cancel timeout timer source
-    if (self.pingTimerSource) {
+    if (self.pingTimerSource)
+        {
         dispatch_source_cancel(self.pingTimerSource);
         self.pingTimerSource = nil;
-    }
+        }
     
     // Cancel NSTimer if it exists
-    if (self.pingTimeoutTimer) {
+    if (self.pingTimeoutTimer)
+        {
         [self.pingTimeoutTimer invalidate];
         self.pingTimeoutTimer = nil;
-    }
+        }
     
     // Terminate task if still running
-    if (self.pingTask && [self.pingTask isRunning]) {
+    if (self.pingTask && [self.pingTask isRunning])
+        {
         [self.pingTask terminate];
-    }
+        }
     
     // Remove notification observer if it exists
-    if (self.pingTerminateObserver) {
+    if (self.pingTerminateObserver)
+        {
         [[NSNotificationCenter defaultCenter] removeObserver:self.pingTerminateObserver];
         self.pingTerminateObserver = nil;
-    }
+        }
     
     self.pingTask = nil;
-}
+    }
 
-- (void)handlePingResult:(NSString *)output {
+- (void)handlePingResult:(NSString *)output
+    {
     // Clean up
     [self cleanupPingTask];
     
@@ -554,91 +627,111 @@
     NSMutableString *summary = [[NSMutableString alloc] init];
     NSInteger packetLoss = 100; // Default to 100% loss (failure)
     
-    if (output && output.length > 0) {
+    if (output && output.length > 0)
+        {
         NSArray *lines = [output componentsSeparatedByString:@"\n"];
         
         // First, check for any successful ping responses
-        for (NSString *line in lines) {
-            if ([line containsString:@"bytes from"]) {
+        for (NSString *line in lines)
+            {
+            if ([line containsString:@"bytes from"])
+                {
                 success = YES; // At least one packet was received
                 break;
+                }
             }
-        }
         
         // Then parse the statistics line
-        for (NSString *line in lines) {
-            if ([line containsString:@"packets transmitted"]) {
+        for (NSString *line in lines)
+            {
+            if ([line containsString:@"packets transmitted"])
+                {
                 // Extract packet loss percentage
                 NSArray *components = [line componentsSeparatedByString:@","];
-                for (NSString *component in components) {
+                for (NSString *component in components)
+                    {
                     NSString *trimmed = [component stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-                    if ([trimmed containsString:@"packet loss"] || [trimmed containsString:@"% packet loss"]) {
+                    if ([trimmed containsString:@"packet loss"] || [trimmed containsString:@"% packet loss"])
+                        {
                         // Extract the percentage number
                         NSScanner *scanner = [NSScanner scannerWithString:trimmed];
                         [scanner scanUpToCharactersFromSet:[NSCharacterSet decimalDigitCharacterSet] intoString:nil];
-                        if ([scanner scanInteger:&packetLoss]) {
+                        if ([scanner scanInteger:&packetLoss])
+                            {
                             success = (packetLoss < 100);
-                        }
+                            }
                         break;
+                        }
                     }
-                }
-                if (summary.length > 0) {
+                if (summary.length > 0)
+                    {
                     [summary appendString:@"\n"];
-                }
+                    }
                 [summary appendString:line];
-            } else if ([line containsString:@"round-trip"] || [line containsString:@"min/avg/max"] || [line containsString:@"stddev"]) {
-                if (summary.length > 0) {
+                }
+            else if ([line containsString:@"round-trip"] || [line containsString:@"min/avg/max"] || [line containsString:@"stddev"])
+                {
+                if (summary.length > 0)
+                    {
                     [summary appendString:@"\n"];
-                }
+                    }
                 [summary appendString:line];
+                }
             }
-        }
         
         // Check for error messages if we haven't determined success yet
-        if (!success) {
+        if (!success)
+            {
             NSString *lowerOutput = [output lowercaseString];
             if ([lowerOutput containsString:@"request timeout"] || 
                 [lowerOutput containsString:@"no route to host"] ||
                 [lowerOutput containsString:@"host is down"] ||
                 [lowerOutput containsString:@"network is unreachable"] ||
                 [lowerOutput containsString:@"unknown host"] ||
-                [lowerOutput containsString:@"cannot resolve"]) {
+                [lowerOutput containsString:@"cannot resolve"])
+                {
                 success = NO;
+                }
             }
-        }
         
         // If we still don't have a summary, use the full output (truncated)
-        if (summary.length == 0 && output.length > 0) {
+        if (summary.length == 0 && output.length > 0)
+            {
             summary = [[output substringToIndex:MIN(500, output.length)] mutableCopy];
+            }
         }
-    }
     
         // Show result
         NSAlert *alert = [[NSAlert alloc] init];
         NSString *ipAddress = [self.ipAddressField stringValue];
         
-        if (success) {
+        if (success)
+            {
             [alert setMessageText:@"Ping Successful"];
             [alert setInformativeText:[NSString stringWithFormat:@"Successfully pinged %@\n\n%@", ipAddress, summary.length > 0 ? summary : output]];
             [alert setAlertStyle:NSAlertStyleInformational];
-        } else {
+            }
+        else
+            {
             [alert setMessageText:@"Ping Failed"];
             NSString *infoText = [NSString stringWithFormat:@"Failed to ping %@", ipAddress];
-            if (output.length > 0) {
+            if (output.length > 0)
+                {
                 infoText = [NSString stringWithFormat:@"%@\n\n%@", infoText, output];
-            }
+                }
             [alert setInformativeText:infoText];
             [alert setAlertStyle:NSAlertStyleWarning];
-        }
+            }
         
         [alert addButtonWithTitle:@"OK"];
         [alert runModal];
-    });
-}
+        });
+    }
 
-- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender {
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
+    {
     return YES;
-}
+    }
 
 @end
 
