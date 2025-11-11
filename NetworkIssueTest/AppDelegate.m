@@ -53,7 +53,7 @@
     [[self.window contentView] addSubview:self.networkInfoScrollView];
     
     // Create IP Address label
-    NSTextField *ipLabel = [[NSTextField alloc] initWithFrame:NSMakeRect(20, 200, 100, git )];
+    NSTextField *ipLabel = [[NSTextField alloc] initWithFrame:NSMakeRect(20, 200, 100, 22)];
     [ipLabel setStringValue:@"IP Address:"];
     [ipLabel setBezeled:NO];
     [ipLabel setDrawsBackground:NO];
