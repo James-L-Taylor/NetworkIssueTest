@@ -1,6 +1,9 @@
 I have multiple Macs configured with fixed IP address ethernet networks that connect directly to fixed-IP LAN devices. Several apps on these Macs communicate with those devices.
+
 On the first launch of an app, macOS prompts for Local Network permission. After I allow it, the app can connect to the local network device.
+
 After a reboot, the same app can no longer connect to the devices.
+
 If I open System Settings → Privacy & Security → Local Network and toggle the app’s permission off, then on, the connection immediately works again.
 
 Expected behavior:
