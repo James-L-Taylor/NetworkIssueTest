@@ -16,5 +16,5 @@ I can ping the target device’s IP even when the app’s connection is blocked.
   
 Testing Asset:
 
-I’ve included a minimal test app that reproduces the issue, along with a short screen capture demonstrating the behavior. This is in the documentation folder.
+I’ve included a minimal test app that reproduces the issue, along with a short screen capture demonstrating the behavior, as well as the code signing of the app. This is in the documentation folder.
 
